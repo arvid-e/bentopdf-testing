@@ -1,4 +1,5 @@
 import { afterEach, vi } from 'vitest';
+import 'geometry-polyfill';
 
 afterEach(() => {
   document.body.innerHTML = '';
