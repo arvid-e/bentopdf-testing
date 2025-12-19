@@ -4,11 +4,12 @@ import {
   convertPoints,
   downloadFile,
   formatBytes,
+  formatShortcutDisplay,
   getPDFDocument,
   getStandardPageName,
   hexToRgb,
   parsePageRanges,
-  formatShortcutDisplay
+  readFileAsArrayBuffer,
 } from '../js/utils/helpers';
 
 vi.mock('pdfjs-dist', () => ({
@@ -241,7 +242,7 @@ describe('helpers', () => {
       const keys = ['ctrl', 'alt'];
       const combo = keys.join('+');
 
-      const result = formatShortcutDisplay(combo, false)
+      const result = formatShortcutDisplay(combo, false);
       const expectedResult = 'Ctrl+Alt';
 
       expect(result).toBe(expectedResult);
@@ -251,7 +252,7 @@ describe('helpers', () => {
       const keys = ['mod', 'shift'];
       const combo = keys.join('+');
 
-      const result = formatShortcutDisplay(combo, true)
+      const result = formatShortcutDisplay(combo, true);
       const expectedResult = '⌘Shift';
 
       expect(result).toBe(expectedResult);
@@ -260,10 +261,21 @@ describe('helpers', () => {
     it('should return empty string on undefined shortcut input', async () => {
       const shortcut = undefined;
 
-      const result = formatShortcutDisplay(shortcut, false)
+      const result = formatShortcutDisplay(shortcut, false);
       expect(result).toBe('');
     });
+  });
 
+  describe('readFileAsArrayBuffer', () => {
+    it('should read the file as an ArrayBuffer', async () => {
+      const content = 'test content';
+      const file = new File([content], 'test.txt', { type: 'text/plain' });
+
+      const result = await readFileAsArrayBuffer(file);
+
+      expect(result).toBeInstanceOf(ArrayBuffer);
+      expect((result as ArrayBuffer).byteLength).toBe(content.length);
+    });
   });
 
   describe('parsePageRanges', () => {
