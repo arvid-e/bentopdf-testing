@@ -1,12 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import * as pdfjsLib from 'pdfjs-dist';
+import { describe, expect, it } from 'vitest';
 import {
-  getStandardPageName,
   convertPoints,
-  hexToRgb,
-  formatBytes,
   downloadFile,
+  formatBytes,
+  getPDFDocument,
+  getStandardPageName,
+  hexToRgb,
   parsePageRanges,
 } from '../js/utils/helpers';
+
+vi.mock('pdfjs-dist', () => ({
+  GlobalWorkerOptions: {
+    workerSrc: '',
+  },
+  getDocument: vi.fn((params) => ({
+    promise: Promise.resolve(params),
+  })),
+}));
 
 describe('helpers', () => {
   describe('getStandardPageName', () => {
@@ -154,7 +165,7 @@ describe('helpers', () => {
 
       vi.spyOn(document.body, 'appendChild');
       vi.spyOn(document.body, 'removeChild');
-  });
+    });
 
     it('should set the correct attributes on the download link', () => {
       const aSpy = document.createElement('a');
@@ -170,7 +181,7 @@ describe('helpers', () => {
       const clickSpy = vi.spyOn(aSpy, 'click');
       const appendSpy = vi.spyOn(document.body, 'appendChild');
       const removeSpy = vi.spyOn(document.body, 'removeChild');
-    
+
       vi.spyOn(document, 'createElement').mockReturnValue(aSpy);
 
       downloadFile(mockBlob, fileName);
@@ -178,6 +189,49 @@ describe('helpers', () => {
       expect(appendSpy).toHaveBeenCalledWith(aSpy);
       expect(clickSpy).toHaveBeenCalled();
       expect(removeSpy).toHaveBeenCalledWith(aSpy);
+    });
+  });
+
+  describe('getPDFDocument', () => {
+    const wasmPath = '/pdfjs-viewer/wasm/';
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should handle string URL input', async () => {
+      const url = 'test.pdf';
+      getPDFDocument(url);
+
+      expect(pdfjsLib.getDocument).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: url,
+          wasmUrl: expect.stringContaining(wasmPath),
+        })
+      );
+    });
+
+    it('should handle Uint8Array input', async () => {
+      const data = new Uint8Array([1, 2, 3]);
+      getPDFDocument(data);
+
+      expect(pdfjsLib.getDocument).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: data,
+          wasmUrl: expect.stringContaining(wasmPath),
+        })
+      );
+    });
+
+    it('should handle null input', async () => {
+      const data = null;
+      getPDFDocument(data);
+
+      expect(pdfjsLib.getDocument).toHaveBeenCalledWith(
+        expect.objectContaining({
+          wasmUrl: expect.stringContaining(wasmPath),
+        })
+      );
     });
   });
 
