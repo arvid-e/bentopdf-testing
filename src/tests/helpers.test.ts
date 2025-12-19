@@ -4,6 +4,7 @@ import {
   convertPoints,
   hexToRgb,
   formatBytes,
+  downloadFile,
   parsePageRanges,
 } from '../js/utils/helpers';
 
@@ -140,6 +141,43 @@ describe('helpers', () => {
 
     it('should handle decimal values', () => {
       expect(formatBytes(1536)).toBe('1.5 KB');
+    });
+  });
+
+  describe('downloadFile', () => {
+    const mockBlob = new Blob(['test'], { type: 'text/plain' });
+    const fileName = 'test.pdf';
+
+    beforeEach(() => {
+      global.URL.createObjectURL = vi.fn(() => 'mock-url');
+      global.URL.revokeObjectURL = vi.fn();
+
+      vi.spyOn(document.body, 'appendChild');
+      vi.spyOn(document.body, 'removeChild');
+  });
+
+    it('should set the correct attributes on the download link', () => {
+      const aSpy = document.createElement('a');
+      vi.spyOn(document, 'createElement').mockReturnValue(aSpy);
+
+      downloadFile(mockBlob, fileName);
+
+      expect(aSpy.download).toBe(fileName);
+    });
+
+    it('should temporarily attach the link to the DOM and trigger it', () => {
+      const aSpy = document.createElement('a');
+      const clickSpy = vi.spyOn(aSpy, 'click');
+      const appendSpy = vi.spyOn(document.body, 'appendChild');
+      const removeSpy = vi.spyOn(document.body, 'removeChild');
+    
+      vi.spyOn(document, 'createElement').mockReturnValue(aSpy);
+
+      downloadFile(mockBlob, fileName);
+
+      expect(appendSpy).toHaveBeenCalledWith(aSpy);
+      expect(clickSpy).toHaveBeenCalled();
+      expect(removeSpy).toHaveBeenCalledWith(aSpy);
     });
   });
 
