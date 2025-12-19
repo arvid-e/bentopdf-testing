@@ -8,6 +8,7 @@ import {
   getStandardPageName,
   hexToRgb,
   parsePageRanges,
+  formatShortcutDisplay
 } from '../js/utils/helpers';
 
 vi.mock('pdfjs-dist', () => ({
@@ -233,6 +234,36 @@ describe('helpers', () => {
         })
       );
     });
+  });
+
+  describe('formatShortcutDisplay', () => {
+    it('should format inputted Windows shortcut keys', async () => {
+      const keys = ['ctrl', 'alt'];
+      const combo = keys.join('+');
+
+      const result = formatShortcutDisplay(combo, false)
+      const expectedResult = 'Ctrl+Alt';
+
+      expect(result).toBe(expectedResult);
+    });
+
+    it('should format inputted Mac shortcut keys', async () => {
+      const keys = ['mod', 'shift'];
+      const combo = keys.join('+');
+
+      const result = formatShortcutDisplay(combo, true)
+      const expectedResult = '⌘Shift';
+
+      expect(result).toBe(expectedResult);
+    });
+
+    it('should return empty string on undefined shortcut input', async () => {
+      const shortcut = undefined;
+
+      const result = formatShortcutDisplay(shortcut, false)
+      expect(result).toBe('');
+    });
+
   });
 
   describe('parsePageRanges', () => {
