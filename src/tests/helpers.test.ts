@@ -12,6 +12,8 @@ import {
   readFileAsArrayBuffer,
 } from '../js/utils/helpers';
 
+import { hideLoader, showAlert, showLoader } from '@/js/ui';
+
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {
     workerSrc: '',
@@ -275,6 +277,50 @@ describe('helpers', () => {
 
       expect(result).toBeInstanceOf(ArrayBuffer);
       expect((result as ArrayBuffer).byteLength).toBe(content.length);
+    });
+  });
+
+  describe('initializeQpdf', () => {
+    beforeEach(async () => {
+      vi.resetModules();
+      vi.clearAllMocks();
+    });
+
+    vi.mock('../js/ui', () => ({
+      showAlert: vi.fn(),
+      showLoader: vi.fn(),
+      hideLoader: vi.fn(),
+    }));
+
+    vi.mock('@neslinesli93/qpdf-wasm', () => ({
+      default: vi.fn().mockResolvedValue({
+        exec: vi.fn(),
+      }),
+    }));
+
+    it('should show and hide loader when initialized', async () => {
+      const { initializeQpdf } = await import('../js/utils/helpers');
+
+      await initializeQpdf();
+
+      expect(hideLoader).toHaveBeenCalled();
+      expect(showLoader).toHaveBeenCalled();
+    });
+
+    it('should show error if initialization fails', async () => {
+      const { initializeQpdf } = await import('../js/utils/helpers');
+      const { default: qpdf } = await import('@neslinesli93/qpdf-wasm');
+
+      vi.mocked(qpdf).mockRejectedValueOnce(
+        new Error('Simulated WASM Failure')
+      );
+
+      try {
+        await initializeQpdf();
+      } catch (error) {
+      }
+
+      expect(showAlert).toHaveBeenCalled();
     });
   });
 
