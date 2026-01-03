@@ -4,6 +4,7 @@ import {
   convertPoints,
   downloadFile,
   formatBytes,
+  formatIsoDate,
   formatShortcutDisplay,
   getPDFDocument,
   getStandardPageName,
@@ -317,10 +318,44 @@ describe('helpers', () => {
 
       try {
         await initializeQpdf();
-      } catch (error) {
-      }
+      } catch (error) {}
 
       expect(showAlert).toHaveBeenCalled();
+    });
+  });
+
+  describe('formatIsoDate', () => {
+    it('should return the input date in local format', async () => {
+      const input = '2025-10-20';
+      const result = formatIsoDate(input);
+      const expectedResult = new Date(input).toLocaleString();
+
+      expect(result).toBe(expectedResult);
+    });
+
+    it('should return original value if not a string', async () => {
+      const input = 10;
+      const result = formatIsoDate(input);
+
+      expect(result).toBe(input);
+    });
+
+    it('should return original string if string is an invalid date', async () => {
+      const input = 'invalid-date';
+      const result = formatIsoDate(input);
+
+      expect(result).toBe(input);
+    });
+
+    it('should return original string if string is an invalid date', async () => {
+      vi.spyOn(global, 'Date').mockImplementation(() => {
+        throw new Error('Forced Error');
+      });
+
+      const input = '2023-01-01';
+      const result = formatIsoDate(input);
+
+      expect(result).toBe(input);
     });
   });
 
