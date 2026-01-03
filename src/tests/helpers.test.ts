@@ -12,6 +12,7 @@ import {
   hexToRgb,
   parsePageRanges,
   readFileAsArrayBuffer,
+  truncateFilename,
 } from '../js/utils/helpers';
 
 import { hideLoader, showAlert, showLoader } from '@/js/ui';
@@ -373,6 +374,36 @@ describe('helpers', () => {
       const expectedResult = (input / 1000).toFixed(1) + 'K';
 
       expect(formatStars(input)).toBe(expectedResult);
+    });
+  });
+
+  describe('truncateFilename', () => {
+    it('should return the original name if it is within maxLength', () => {
+      const input = 'short.txt';
+
+      expect(truncateFilename(input, 20)).toBe(input);
+    });
+
+    it('should truncate and preserve the extension for long names', () => {
+      const input = 'this-is-a-very-long-filename-that-needs-truncating.pdf';
+      const result = truncateFilename(input, 25);
+
+      expect(result).toBe('this-is-a-very-lon....pdf');
+      expect(result.length).toBe(25);
+    });
+
+    it('should truncate correctly if there is no extension', () => {
+      const input = 'LongFileNameWithNoExtensionAtAll';
+      const result = truncateFilename(input, 10);
+
+      expect(result).toBe('LongFil...'); 
+    });
+
+    it('should fallback to simple truncation if extension is too long', () => {
+      const input = 'file.verylongextension';
+      const result = truncateFilename(input, 5);
+
+      expect(result).toBe('fi...');
     });
   });
 
