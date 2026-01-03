@@ -6,6 +6,7 @@ import {
   formatBytes,
   formatIsoDate,
   formatShortcutDisplay,
+  formatStars,
   getPDFDocument,
   getStandardPageName,
   hexToRgb,
@@ -356,6 +357,22 @@ describe('helpers', () => {
       const result = formatIsoDate(input);
 
       expect(result).toBe(input);
+    });
+  });
+
+  describe('formatStars', () => {
+    it('should return locale string of number if under 1000', async () => {
+      const input = 50;
+      const expectedResult = input.toLocaleString();
+
+      expect(formatStars(input)).toBe(expectedResult);
+    });
+
+    it('should return input number divided by 1000', async () => {
+      const input = 2000;
+      const expectedResult = (input / 1000).toFixed(1) + 'K';
+
+      expect(formatStars(input)).toBe(expectedResult);
     });
   });
 
